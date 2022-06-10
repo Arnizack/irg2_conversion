@@ -266,13 +266,12 @@ function nwbAddSweep(nwb,sweep_number,electrode,stimulus_name,fTime,...
         
     nwb.stimulus_presentation.set(['Sweep_', num2str(sweep_number)], ccs);    
     
-    %suggestion Stefan
                 if On-(0.45/D.param.xScale(1)) < 0 % calculating bias current
                     bias = mean(D.data(1:On,s,2)); % no testpulse or unknown protocols; pA
                 else
                     bias = mean(D.data(ceil(On-(0.45/D.param.xScale(1))):On,s,2)); % with test pulse; pA; ceil because matlab throws an error otherwise
                 end
-    %suggestion Stefan ende
+                
     %%bias current = Stromspur vorm Testpuls zum richtigen Puls
     %% Mindesten 100 ms lang
     nwb.acquisition.set(['Sweep_', num2str(sweep_number)], ...
