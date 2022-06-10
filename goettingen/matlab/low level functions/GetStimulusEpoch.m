@@ -79,6 +79,9 @@ plot(input)
 
 plot(above_threshold_mask);
 
+%% Steigungsrate ramp: 25 p amp/s
 
+%% Rampe: Maximale Länge 20 Sekunden
+%% 
 
 end

@@ -224,7 +224,9 @@ function StimDescription = createStimDescription(data,x_scale)
 
 
     %%??? see line 120 in cfs2NWBconversionG
-    if round(duration,0) == 1
+    %%Die gesamten daten sind 8 Sekunden lang
+    %% Wolle immer mit 80 KHz sampeln x_scale 
+    if round(duration,0) == 1 &&  length(data) == 400000
         StimDescription.name='Long Pulse';
 
     elseif round(duration,3) == 0.003
@@ -232,7 +234,7 @@ function StimDescription = createStimDescription(data,x_scale)
     else
         disp(['Unknown stimulus type with duration of '... includes ramp problem
         , num2str(round(duration,3)), ' s']);
-        StimDescription.name='Unkown';
+        StimDescription.name='unkown';
     end
 
 end
@@ -264,6 +266,8 @@ function nwbAddSweep(nwb,sweep_number,electrode,stimulus_name,fTime,...
         
     nwb.stimulus_presentation.set(['Sweep_', num2str(sweep_number)], ccs);    
     
+    %%bias current = Stromspur vorm Testpuls zum richtigen Puls
+    %% Mindesten 100 ms lang
     nwb.acquisition.set(['Sweep_', num2str(sweep_number)], ...
         types.core.CurrentClampSeries( ...
             'bias_current', [], ... % Unit: Amp
