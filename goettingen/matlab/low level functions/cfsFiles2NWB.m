@@ -49,7 +49,7 @@ function Protocols = createProtocols(stimDescriptions,sweepNumberEnds)
     for file_i = 1:length(stimDescriptions)
         stimDesc = stimDescriptions(file_i);
         
-        protocol = {'unkown'};
+        protocol = {'Unknown'};
         if(strcmp(stimDesc.name,'Long Pulse'))
             protocol = {'LP'};
         elseif(strcmp(stimDesc.name,'Short Pulse'))
@@ -226,7 +226,7 @@ function StimDescription = createStimDescription(data,x_scale)
     %%??? see line 120 in cfs2NWBconversionG
     %%Die gesamten daten sind 8 Sekunden lang
     %% Wolle immer mit 80 KHz sampeln x_scale 
-    if round(duration,0) == 1 &&  length(data) == 400000
+    if round(duration,0) == 1 && length(data) == 400000 % length check needed to prevent misslabeling of capacitance recordings as LP
         StimDescription.name='Long Pulse';
 
     elseif round(duration,3) == 0.003
@@ -234,7 +234,7 @@ function StimDescription = createStimDescription(data,x_scale)
     else
         disp(['Unknown stimulus type with duration of '... includes ramp problem
         , num2str(round(duration,3)), ' s']);
-        StimDescription.name='unkown';
+        StimDescription.name='Unknown';
     end
 
 end
