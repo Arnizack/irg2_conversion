@@ -54,6 +54,8 @@ function Protocols = createProtocols(stimDescriptions,sweepNumberEnds)
             protocol = {'LP'};
         elseif(strcmp(stimDesc.name,'Short Pulse'))
             protocol = {'SP'};
+        elseif(strcmp(stimDesc.name,'Ramp'))
+            protocol = {'Ramp'};
         end
         
         sweepNumberStart = 1;
@@ -222,7 +224,7 @@ function StimDescription = createStimDescription(data,x_scale,y_scale)
 
     %%??? see line 120 in cfs2NWBconversionG
     %%Die gesamten daten sind 8 Sekunden lang
-    %% Wolle immer mit 80 KHz sampeln x_scale 
+    %% Wolle immer mit 50 KHz sampeln x_scale 
     if (round(duration,0) == 1) && (length(data) == 400000) % length check needed to prevent misslabeling of capacitance recordings as LP
         StimDescription.name='Long Pulse';
 
