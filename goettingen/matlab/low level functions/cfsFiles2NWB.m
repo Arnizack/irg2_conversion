@@ -213,29 +213,35 @@ end
 %%      start_idx (was called on in early versions)
 %%      end_idx (was called off in early versions)
 %%      duration
-function StimDescription = createStimDescription(data,x_scale)
+function StimDescription = createStimDescription(data,x_scale,y_scale)
     StimDescription = struct;
     [start_i,end_i] = GetStimulusEpoch(data);
-    StimDescription.start_idx = start_i;
-    StimDescription.end_idx = end_i;
-    StimDescription.count = (end_i-start_i);
 
-    duration = StimDescription.count * x_scale;
+    duration = (end_i-start_i) * x_scale;
 
 
     %%??? see line 120 in cfs2NWBconversionG
     %%Die gesamten daten sind 8 Sekunden lang
     %% Wolle immer mit 80 KHz sampeln x_scale 
-    if round(duration,0) == 1 && length(data) == 400000 % length check needed to prevent misslabeling of capacitance recordings as LP
+    if (round(duration,0) == 1) && (length(data) == 400000) % length check needed to prevent misslabeling of capacitance recordings as LP
         StimDescription.name='Long Pulse';
 
     elseif round(duration,3) == 0.003
         StimDescription.name='Short Pulse';
+    % 1,2 sind die Werte wenn das Signal zu nosiy ist
+    elseif (round(duration,0) ~= 1)  && (~(start_i==1 && end_i==2))
+        start_i = GetRampStimulusEpoch(data,end_i,x_scale,y_scale);
+        StimDescription.name='Ramp';
     else
         disp(['Unknown stimulus type with duration of '... includes ramp problem
         , num2str(round(duration,3)), ' s']);
         StimDescription.name='Unknown';
     end
+
+
+    StimDescription.start_idx = start_i;
+    StimDescription.end_idx = end_i;
+    StimDescription.count = (end_i-start_i);
 
 end
 
@@ -250,43 +256,53 @@ end
 %%a: Spannungs Kanal
 %%b: Strom Kanal
 function nwbAddSweep(nwb,sweep_number,electrode,stimulus_name,fTime,...
-                     data_a,y_unit_a,start_time_rate_a,...
-                     data_b,y_unit_b,start_time_rate_b)
-
+                     stimDesc,...
+                     data_voltage,y_unit_voltage,x_scale_voltage,...
+                     data_current,y_unit_current,x_scale_current)
+    start_time_rate_voltage = round(1./x_scale_voltage);
+    start_time_rate_current = round(1./x_scale_current);
+    
      ccs = types.core.CurrentClampStimulusSeries( ...
             'electrode', electrode, ...
             'gain', NaN, ...
             'stimulus_description', stimulus_name, ...
-            'data_unit', y_unit_b, ...
-            'data', data_b, ... 
+            'data_unit', y_unit_current, ...
+            'data', data_current, ... 
             'sweep_number', sweep_number,...
             'starting_time', seconds(duration(fTime)),...
-            'starting_time_rate', start_time_rate_b... %% why different rates?
+            'starting_time_rate', start_time_rate_current... %% why different rates?
             );
         
     nwb.stimulus_presentation.set(['Sweep_', num2str(sweep_number)], ccs);    
     
     %suggestion Stefan
-                if On-(0.45/D.param.xScale(1)) < 0 % calculating bias current
-                    bias = mean(D.data(1:On,s,2)); % no testpulse or unknown protocols; pA
-                else
-                    bias = mean(D.data(ceil(On-(0.45/D.param.xScale(1))):On,s,2)); % with test pulse; pA; ceil because matlab throws an error otherwise
-                end
+    start_test_pulse = stimDesc.start_idx-(0.45/x_scale_current);
+    end_test_pulse = stimDesc.start_idx;
+    %x.Scale(1) ist Spannung ?
+    if start_test_pulse < 0
+         % no testpulse or unknown protocols; pA
+        start_test_pulse = 1;
+    else
+        start_test_pulse = ceil(start_test_pulse);
+         % with test pulse; pA; ceil because matlab throws an error otherwise
+    end
+
+    bias = mean(data_current(start_test_pulse:end_test_pulse));
     %suggestion Stefan ende
     %%bias current = Stromspur vorm Testpuls zum richtigen Puls
     %% Mindesten 100 ms lang
     nwb.acquisition.set(['Sweep_', num2str(sweep_number)], ...
         types.core.CurrentClampSeries( ...
-            'bias_current', [], ... % Unit: Amp
+            'bias_current', bias, ... % Unit: Amp
             'bridge_balance', [], ... % Unit: Ohm
             'capacitance_compensation', [], ... % Unit: Farad
-            'data', data_a, ...
-            'data_unit', y_unit_a, ...
+            'data', data_voltage, ...
+            'data_unit', y_unit_voltage, ...
             'electrode', electrode, ...
             'stimulus_description', stimulus_name, ...   
             'sweep_number', sweep_number,...
             'starting_time', seconds(duration(fTime)),...
-            'starting_time_rate', start_time_rate_a...
+            'starting_time_rate', start_time_rate_voltage...
                 ));
 end
 
@@ -336,7 +352,7 @@ function [sweepAmps,stimDesc,sweepNumberEnd,ic_elec] = cfsFile2NWB(CfsFile, ...
     nwb.session_start_time = cellStartTime;
 
    
-    stimDesc = createStimDescription(mean(CfsFile.data(:,:,2),2),CfsFile.param.xScale(2));
+    stimDesc = createStimDescription(mean(CfsFile.data(:,:,2),2),CfsFile.param.xScale(2),CfsFile.param.yScale(2));
 
     sweepAmps = [];
     
@@ -352,8 +368,9 @@ function [sweepAmps,stimDesc,sweepNumberEnd,ic_elec] = cfsFile2NWB(CfsFile, ...
                     sweepNumber,...
                     ic_elec_link,stimDesc.name,...
                     CfsFile.param.fTime,...
-                    CfsFile.data(:,s,1), CfsFile.param.yUnits{1}, round(1/CfsFile.param.xScale(1)),...
-                    CfsFile.data(:,s,2), CfsFile.param.yUnits{2}, round(1/CfsFile.param.xScale(2)));
+                    stimDesc,...
+                    CfsFile.data(:,s,1), CfsFile.param.yUnits{1}, CfsFile.param.xScale(1),...
+                    CfsFile.data(:,s,2), CfsFile.param.yUnits{2}, CfsFile.param.xScale(2));
         
         sweepNumber = sweepNumber+1;
 
