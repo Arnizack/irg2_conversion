@@ -5,8 +5,12 @@ function StimOn = GetRampStimulusEpoch(input,StimOff,x_scale,y_scale)
     
     
     lower_quantile = quantile(input,0.1);
+    max_input = max(input)
+    StimOff = find(input==max_input);
+    StimOff = StimOff(1);
 
-    mask_lower = input>=lower_quantile;
+    threshold = max_input*0.5+lower_quantile*0.5;
+    mask_lower = input>=threshold;
 
     start_fit = find(diff(mask_lower)==1);
     start_fit = start_fit(length(start_fit));%take last element
@@ -34,11 +38,13 @@ function StimOn = GetRampStimulusEpoch(input,StimOff,x_scale,y_scale)
 
     disp(['Ramp gradient: ',num2str(b(2))])
 
-    min_val = quantile(input,0.01);
+    min_val = quantile(input,0.05);
 
     StimOn = find(diff(min_val<=ideal_ramp_line)==1);
     plot(ideal_ramp_line);
-    
+    if(length(StimOn)>1)
+        xline(start_fit)
+    end
     xline(StimOff);
     xline(StimOn);
     hold off

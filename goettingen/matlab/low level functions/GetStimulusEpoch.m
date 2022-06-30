@@ -1,10 +1,25 @@
 function [StimOn,StimOff] = GetStimulusEpoch(input)
 
+max_input = max(input(4000:end));
+min_input = quantile(input(4000:end),0.01);
+
+threshold = max_input*0.5+min_input*0.5;
+close all 
+plot(input);
+yline(threshold);
+beginning = mean(input(1:100));
+% Überprüfen ob der puls nach unten geht
+if(beginning>threshold)
+    input = input*-1;
+end
+
 %upper_quantile = quantile(input,0.95);
 
 max_input = max(input);
 
 lower_quantile = quantile(input,0.05);
+
+
 
 threshold = max_input*0.5+lower_quantile*0.5;
 
