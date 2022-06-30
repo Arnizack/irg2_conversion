@@ -230,8 +230,8 @@ function StimDescription = createStimDescription(data,x_scale,y_scale)
 
     elseif round(duration,3) == 0.003
         StimDescription.name='Short Pulse';
-    % 1,2 sind die Werte wenn das Signal zu nosiy ist
-    elseif (round(duration,0) ~= 1)  && (~(start_i==1 && end_i==2))
+    % 1,2 sind die Werte wenn das Signal zu noisy ist
+    elseif (round(duration,3) ~= 1)  && (~(start_i==1 && end_i==2))
         start_i = GetRampStimulusEpoch(data,end_i,x_scale,y_scale);
         StimDescription.name='Ramp';
     else
@@ -401,7 +401,7 @@ end
 
 function ID = getNwbIdentifier(AnimalDesc,CellTag)
     
-    MATFXID = ['M',AnimalDesc.number,'_',AnimalDesc.name, '_A1_C', CellTag,'_']; % ID for MatFX naming convention - needs to be expanded on
+    MATFXID = ['M',AnimalDesc.number,'_',AnimalDesc.patcher, '_A1_C', CellTag,'_']; % ID for MatFX naming convention - needs to be expanded on
     ID = [MATFXID,'Goettingen', '_',AnimalDesc.Amp,'_Cell', CellTag];
 end
 

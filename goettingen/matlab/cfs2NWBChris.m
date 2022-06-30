@@ -1,11 +1,14 @@
 
 
+
 % for debugging
-mainfolder = 'F:\uni\nebenjob\data\NPI Neuroanatomy - Raw Data CFS-Files\Eisenherz_01032022\Jenifer_20220301';
+mainfolder = 'F:\uni\nebenjob\data\NPI Neuroanatomy - Raw Data CFS-Files\Origano_22022022\Jenifer';
 outputfolder = 'F:\uni\nebenjob\output\cfs';
 
-%mainfolder = uigetdir('E:\Data\MonkeyData\Monkeys','Select main folder containing all cell folders'); % select individual folders at start
-%outputfolder = uigetdir(mainfolder,'Select output folder'); 
+
+
+mainfolder = uigetdir('E:\Data\MonkeyData\Monkeys','Select main folder containing all cell folders'); % select individual folders at start
+outputfolder = uigetdir(mainfolder,'Select output folder'); 
 
 % %for debugging
 desc = struct;
@@ -19,7 +22,9 @@ desc.sex = 'T';
 % % capitalizes first letter
 desc.species = 'T'; 
 
-%desc = getAnimalDesc();
+desc = getAnimalDesc(mainfolder);
+
+
 
 cellList = getCellNames(mainfolder);
 
