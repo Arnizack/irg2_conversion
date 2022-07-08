@@ -7,8 +7,8 @@ outputfolder = 'F:\uni\nebenjob\output\cfs';
 
 
 
-mainfolder = uigetdir('E:\Data\MonkeyData\Monkeys','Select main folder containing all cell folders'); % select individual folders at start
-outputfolder = uigetdir(mainfolder,'Select output folder'); 
+%mainfolder = uigetdir('E:\Data\MonkeyData\Monkeys','Select main folder containing all cell folders'); % select individual folders at start
+%outputfolder = uigetdir(mainfolder,'Select output folder'); 
 
 % %for debugging
 desc = struct;
