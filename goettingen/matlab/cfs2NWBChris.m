@@ -1,46 +1,61 @@
 
 
 
+
 % for debugging
-mainfolder = 'F:\uni\nebenjob\data\NPI Neuroanatomy - Raw Data CFS-Files\Origano_22022022\Jenifer';
+mainfolder = 'F:\uni\nebenjob\data\NPI Neuroanatomy - Raw Data CFS-Files';
 outputfolder = 'F:\uni\nebenjob\output\cfs';
 
 
+db_builder = DbBuilder(mainfolder);
 
-%mainfolder = uigetdir('E:\Data\MonkeyData\Monkeys','Select main folder containing all cell folders'); % select individual folders at start
-%outputfolder = uigetdir(mainfolder,'Select output folder'); 
+monkey_db = db_builder.OpenMonkeys();
 
-% %for debugging
-desc = struct;
-desc.number = '1';
-desc.patcher = 'T';
-desc.Amp = 'T';
-% capitalizes first letter
-desc.name = 'Test'; 
-desc.age ='1y';
-desc.sex = 'T';
-% % capitalizes first letter
-desc.species = 'T'; 
-
-desc = getAnimalDesc(mainfolder);
+listing = dir(mainfolder);
+listing = listing([listing.isdir]);
+mask = contains({listing(:).name},'_');
+monkeyFolders = {listing([mask]).name};
 
 
+for monkey_idx=1:length(monkeyFolders)
+    monkeyFolder = monkeyFolders{monkey_idx};
+    monkeyName = extractBefore(monkeyFolder,'_');
+    
+    monkeyDirectory = [mainfolder,'/',monkeyFolder];
 
-cellList = getCellNames(mainfolder);
+    listing = dir(monkeyDirectory);
+    listing = listing([listing.isdir]);
+    mask = contains({listing(:).name},'.');
+    patcherFolders = {listing(~mask).name};
 
-for n = 1:length(cellList)
-    cellID = cellList(n).name;
-    disp(cellID);
-    cellTag = num2str(n, '%02.f');
-    fileList = dir([mainfolder,'/',cellList(n,1).name,'/*.cfs']);
+    for patcher_idx = 1:length(patcherFolders)
 
-    pathList = strcat({fileList.folder},{'/'},{fileList.name});
+        patcher = patcherFolders{patcher_idx};
+        desc = getAnimalDesc(monkey_db,patcher,monkeyName);
 
-    pathList = string(pathList);
+        patcherDirectory = [monkeyDirectory,'/',patcher];
+        
+        cellList = getCellNames(patcherDirectory);
+        
 
-    nwb = cfsFiles2NWB(pathList,desc,cellTag);
-
-    nwb_savepath = fullfile([outputfolder , '\',nwb.identifier '.nwb']);
-    nwbExport(nwb, nwb_savepath);
-
+        for n = 1:length(cellList)
+            cellID = cellList(n).name;
+            disp(cellID);
+            cellTag = num2str(n, '%02.f');
+            fileList = dir([patcherDirectory,'/',cellList(n,1).name,'/*.cfs']);
+        
+            pathList = strcat({fileList.folder},{'/'},{fileList.name});
+        
+            pathList = string(pathList);
+        
+            nwb = cfsFiles2NWB(pathList,desc,cellTag);
+        
+            nwb_savepath = fullfile([outputfolder , '\',nwb.identifier '.nwb']);
+            nwbExport(nwb, nwb_savepath);
+        
+        end
+    end
 end
+
+
+
