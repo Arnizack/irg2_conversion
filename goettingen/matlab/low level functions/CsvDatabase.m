@@ -97,7 +97,8 @@ classdef CsvDatabase < handle
             if(mod(length(varargin),2)~=0)
                 error("An even number of arguments musst be provided");
             end
-            mask = true;
+            mask = zeros(height(obj.table),1);
+            mask(:) = true;
             for argument_i=1:2:length(varargin)
                 structName = varargin{argument_i};
                 structValue = varargin{argument_i+1};

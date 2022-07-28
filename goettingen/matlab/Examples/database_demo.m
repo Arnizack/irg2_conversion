@@ -7,10 +7,17 @@ db = CsvDatabase('F:\uni\nebenjob\data\NPI Neuroanatomy - Raw Data CFS-Files\Mon
     );
 
 
-data1 = db.request('Monkey','Eisenhez');
+data1 = db.request('Monkey','Eisenherz');
 
 
 data2 = db.request('Age',3,'Sex','M');
 
 datas = db.request('Sex','M');
+
+fulltable = db.request();
+
+data3 = db.requestMasked(db.table.Monkey=="Eisenherz");
+
+
+
 
