@@ -6,6 +6,9 @@
 mainfolder = 'F:\uni\nebenjob\data\NPI Neuroanatomy - Raw Data CFS-Files';
 outputfolder = 'F:\uni\nebenjob\output\cfs';
 
+mainfolder = uigetdir('','Select main folder containing all monkey folders');
+outputfolder = uigetdir(mainfolder,'Select output folder'); 
+
 
 db_builder = DbBuilder(mainfolder);
 
