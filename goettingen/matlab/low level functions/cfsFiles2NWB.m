@@ -1,6 +1,4 @@
 %CfsFilePaths is a list of paths to cfs files
-
-%mainfolder can be ""
 function nwb = cfsFiles2NWB(CfsFilePaths,AnimalDesc,cellTag)
 
     nwbIdentifier = getNwbIdentifier(AnimalDesc,cellTag);
@@ -104,8 +102,8 @@ function ic_rec_table = createIcRecTable(sweepCount, ...
 
     [sweep_series_objects_ch1,sweep_series_objects_ch2] = createSweepSeries(sweepNumberEnds);
 
-    stimOn=[];%%StimOn
-    stimCount = [];%%StimDuration
+    stimOn=[];
+    stimCount = [];
     
     for file_i = 1:length(stimDescriptions)
         stimDesc = stimDescriptions(file_i);
@@ -120,10 +118,8 @@ function ic_rec_table = createIcRecTable(sweepCount, ...
     end
 
 
-    %BinaryLP(isnan(BinaryLP)) = 0; % should be accounted for in line 98/99
-    %BinarySP(isnan(BinarySP)) = 0;
+
     stimOn(isnan(stimOn)) = 0;
-    %stimOff(isnan(stimOff)) = 0;
     SweepAmps(isnan(SweepAmps)) = 0;
 
     ic_rec_table = types.core.IntracellularRecordingsTable( ...
@@ -222,7 +218,7 @@ function StimDescription = createStimDescription(data,x_scale,y_scale)
     duration = (end_i-start_i) * x_scale;
 
 
-    %%??? see line 120 in cfs2NWBconversionG
+
     %%Die gesamten daten sind 8 Sekunden lang
     %% Wolle immer mit 50 KHz sampeln x_scale 
     if (round(duration,0) == 1) && (length(data) == 400000) % length check needed to prevent misslabeling of capacitance recordings as LP
@@ -252,9 +248,7 @@ function amp = getStimAmplitude(data,stimDesc)
     amp = round(mean(stim_on_data),-1);
 end
 
-%%???
-%%a=data(:,s,1) %%?? how do you call these channels
-%%fTime = D.param.fTime
+
 %%a: Spannungs Kanal
 %%b: Strom Kanal
 function nwb = nwbAddSweep(nwb,sweep_number,electrode,stimulus_name,fTime,...
@@ -272,15 +266,14 @@ function nwb = nwbAddSweep(nwb,sweep_number,electrode,stimulus_name,fTime,...
             'data', data_current, ... 
             'sweep_number', sweep_number,...
             'starting_time', seconds(duration(fTime)),...
-            'starting_time_rate', start_time_rate_current... %% why different rates?
+            'starting_time_rate', start_time_rate_current...
             );
         
     nwb.stimulus_presentation.set(['Sweep_', num2str(sweep_number)], ccs);    
     
-    %suggestion Stefan
+
     start_test_pulse = stimDesc.start_idx-(0.45/x_scale_current);
     end_test_pulse = stimDesc.start_idx;
-    %x.Scale(1) ist Spannung ?
     if start_test_pulse < 0
          % no testpulse or unknown protocols; pA
         start_test_pulse = 1;
@@ -290,9 +283,8 @@ function nwb = nwbAddSweep(nwb,sweep_number,electrode,stimulus_name,fTime,...
     end
 
     bias = mean(data_current(start_test_pulse:end_test_pulse));
-    %suggestion Stefan ende
+
     %%bias current = Stromspur vorm Testpuls zum richtigen Puls
-    %% Mindesten 100 ms lang
     nwb.acquisition.set(['Sweep_', num2str(sweep_number)], ...
         types.core.CurrentClampSeries( ...
             'bias_current', bias, ... % Unit: Amp
@@ -310,7 +302,6 @@ end
 
 
 
-%%json_path = [mainfolder, cellID, '\', fileList(f).name(1:end - 3), 'json']
 function ic_elec_name = loadIcElecName(json_path)
     %% load JSON from MCC get settings files if present
     if isfile(json_path)
@@ -318,10 +309,8 @@ function ic_elec_name = loadIcElecName(json_path)
         settingsMCC = jsondecode(raw);
         cellsFieldnames = fieldnames(settingsMCC);
         ic_elec_name = cellsFieldnames{1, 1}(2:end);
-        %%electOffset = settingsMCC.(cellsFieldnames{1, 1}).GetPipetteOffset;
     else
         ic_elec_name = 'unknown electrode';
-        %%electOffset = NaN;
     end
 end
 

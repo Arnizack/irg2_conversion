@@ -5,7 +5,8 @@ function StimOn = GetRampStimulusEpoch(input,StimOff,x_scale,y_scale)
     
     
     lower_quantile = quantile(input,0.1);
-    max_input = max(input)
+    max_input = max(input);
+    
     StimOff = find(input==max_input);
     StimOff = StimOff(1);
 
@@ -15,7 +16,10 @@ function StimOn = GetRampStimulusEpoch(input,StimOff,x_scale,y_scale)
     start_fit = find(diff(mask_lower)==1);
     start_fit = start_fit(length(start_fit));%take last element
     
-    
+    % Alternativ: Benutzt die vorgegebene Steigung
+    % Das hat bei den Daten nicht ganz so gut funktioniert, da die
+    % vorgegebene Steigung anderes ist zu der tatsächlichen Steigung.
+
     %x = [start_fit:StimOff];
     %ideal_ramp_line = x*25*x_scale;
 
@@ -25,6 +29,9 @@ function StimOn = GetRampStimulusEpoch(input,StimOff,x_scale,y_scale)
 
     %x = [1:length(input)];
     %ideal_ramp_line = x*25*x_scale - displacement;
+
+    % Fitte eine lineare Funktion f(x) = b(1)*x+b(2) zu dem signal von 
+    % start_fit zu StimOff
 
     x = [start_fit:StimOff];
     X = [ones(StimOff-start_fit+1,1),transpose(x)];
@@ -40,6 +47,8 @@ function StimOn = GetRampStimulusEpoch(input,StimOff,x_scale,y_scale)
 
     min_val = quantile(input,0.05);
 
+    % Finde den Punkt in dem f(x) den minimalen Wert des signales schneidet
+    % Dort ist dann der Punkt ab dem die Ramp steigt
     StimOn = find(diff(min_val<=ideal_ramp_line)==1);
     plot(ideal_ramp_line);
     if(length(StimOn)>1)

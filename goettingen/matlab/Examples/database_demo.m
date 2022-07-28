@@ -1,0 +1,16 @@
+
+db = CsvDatabase('F:\uni\nebenjob\data\NPI Neuroanatomy - Raw Data CFS-Files\Monkeys.csv', ...
+    {'string'         ,'int32','datetime'        ,'int32'   ,'string','string'}, ...
+    {'char'           ,'int32','datetime'        ,'int32'   ,'char'  ,'char'},...
+    {'Monkey'         ,'Number','Date'           ,'Age'     ,'Sex'     ,'Species'}, ...
+    ';'...
+    );
+
+
+data1 = db.request('Monkey','Eisenhez');
+
+
+data2 = db.request('Age',3,'Sex','M');
+
+datas = db.request('Sex','M');
+

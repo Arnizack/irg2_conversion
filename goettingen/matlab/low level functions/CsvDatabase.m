@@ -9,7 +9,7 @@ classdef CsvDatabase < handle
     %   Detailed explanation goes here
     
     properties
-        datatable;
+        table;
         csvTypes
         csvNames
         structTypes
@@ -23,101 +23,110 @@ classdef CsvDatabase < handle
     end
     
     methods
-        function obj = CsvDatabase(path,csvTypes,csvNames,structTypes,structNames,defaults, descriptions, deliminater)
+        function obj = CsvDatabase(path,csvTypes,structTypes,structNames, deliminater)
             %CSVDATABASE Construct an instance of this class
-            %   - csvTypes are the types of the table in the csv file
-            %   - csvNames are the names of the columns in the csv file
+            %   - csvTypes are the types of the table in the csv file.
+            %     the csvTypes shell not contain char. Use string instead.
             %   - structTypes and structNames are types and names of the 
             %     struct returned by the request method
-            %   - defaults are the default values to use when there is no 
-            %     entry in the table
-            %   - the descriptions describe each column in the csv file
-            %     this is used for the input dialog
 
             obj.csvTypes = csvTypes;
-            obj.csvNames = csvNames;
+            
             obj.structTypes = structTypes;
             obj.structNames = structNames;
-            obj.defaults = defaults;
             obj.deliminater=deliminater;
             
-            obj.descriptions = descriptions;
             obj=obj.open(path);
             [~,filename,~] = fileparts(path);
             obj.title = filename;
 
         end
         
-        function data = defaultStruct(obj)
-            data = struct;
-            for i =1:length(obj.structNames)
-                value = obj.defaults{i};
-                % dynamic field name
-                data.(obj.structNames{i}) = value;
-            end
-        end
 
 
         function obj = open(obj,path)
             obj.path = path;
             obj.importOptions = detectImportOptions(path);
+            obj.csvNames = obj.importOptions.VariableNames;
             obj.importOptions = setvartype(obj.importOptions,obj.csvNames,obj.csvTypes);
             obj.importOptions.Delimiter = {obj.deliminater};
-            obj.datatable = readtable(obj.path,obj.importOptions);
+            obj.table = readtable(obj.path,obj.importOptions);
             
         end
 
         
 
-        function data = inputDialog(obj,defaultanswer)
-            width = 70;
-            height = 1;
-            num_lines = [height,width];
+     
 
+        function datas = request(obj,varargin)
+            %The length of the varargin must be even
+            %varargin should be column_1,value_1, column_2,value_2, ...
+            %The result will be all rows of the csv where 
+            %csv.column_1 == value_1 && csv.column_2 == value_2 && ...
+            %EG:
+            %
+            %CSV:
+            %   Sex, Age, Name
+            %   M  , 3  , Peter
+            %   M  , 2  , Olaf
+            %   F  , 3  , Esther
+            %   F  , 1  , Elisa
+            %   M  , 3  , Hans
+            %
+            %Struct
+            %   sex
+            %   age
+            %   name
+            %
+            % db.request('sex','M','age',3)
+            %   struct(sex: 'M', age: 3, name: 'Peter')
+            %   struct(sex: 'M', age: 3, name: 'Hans')
+            %
+            %
+            %db.request('Sex','M','Age',3) would be an error because 
+            % 'Sex' is not a field name of the struct
             
-            answers = inputdlg(obj.descriptions,obj.title,num_lines,defaultanswer);
-            data = obj.defaultStruct();
-            for i =1:length(obj.structNames)
-                % dynamic field name
-                if(~strcmp(answers{i},''))
-                    data.(obj.structNames{i}) = convertstr(convertCharsToStrings(answers{i}),obj.structTypes{i});
-                end
+
+
+            mask = obj.getMask(varargin{:});
+            datas=obj.requestMasked(mask);
+            
+        end
+
+        function mask = getMask(obj,varargin)
+            if(mod(length(varargin),2)~=0)
+                error("An even number of arguments musst be provided");
+            end
+            mask = true;
+            for argument_i=1:2:length(varargin)
+                structName = varargin{argument_i};
+                structValue = varargin{argument_i+1};
+
+                field_i = find(strcmp(obj.structNames,structName));
+
+                columnName = obj.csvNames{field_i};
+                
+                csv_value = convertType(structValue,obj.structTypes{field_i},obj.csvTypes{field_i});
+
+                mask = mask & obj.table.(columnName)==csv_value;
             end
         end
 
-        function data = request(obj,structName,value)
-            field_i = find(strcmp(obj.structNames,structName));
+        function datas = requestMasked(obj,mask)
+            row_ids = find(mask);
             field_n = length(obj.structTypes);
-            
-            columnName = obj.csvNames{field_i};
-            value_type = obj.structTypes{field_i};
-            
-            csv_value = convertType(value,obj.structTypes{field_i},obj.csvTypes{field_i});
-            
-            row_i = find(obj.datatable.(columnName)==csv_value);
 
-            if(length(row_i)==1)
-                data = struct;
+            datas = struct([]);
+
+            for j=1:length(row_ids)
+                row_i = row_ids(j);
+                
                 for i=1:field_n
-                    val = obj.datatable.(obj.csvNames{i})(row_i);
+                    val = obj.table.(obj.csvNames{i})(row_i);
                     val = convertType(val,obj.csvTypes{i},obj.structTypes{i});
-                    data.(obj.structNames{i}) = val;
+                    datas(j).(obj.structNames{i}) = val;
                 end
-            elseif(isempty(row_i))
-
-                defaultans = cell(1,length(obj.descriptions));
-                [defaultans{:}] = deal('');
-                defaultans{field_i} = convertType(value,value_type,'char');
-                data = obj.inputDialog(defaultans);
-                obj.push(data);
-                
-                
-
-            else
-                error(['the column ', columnName, ' has multiple rows with the value', csv_value, ...
-                    '. The value shell be unique.'])
             end
-
         end
 
         function obj = push(obj,data)
@@ -129,11 +138,11 @@ classdef CsvDatabase < handle
                 val = convertType(val,obj.structTypes{i},obj.csvTypes{i});
                 row{i} = val;
             end
-            obj.datatable = [obj.datatable;row];
+            obj.table = [obj.table;row];
         end
 
         function save(obj)
-            writetable(obj.datatable,obj.path,'Delimiter',obj.deliminater);
+            writetable(obj.table,obj.path,'Delimiter',obj.deliminater);
         end
 
          
