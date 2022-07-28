@@ -16,6 +16,7 @@ monkey_db = db_builder.OpenMonkeys();
 
 listing = dir(mainfolder);
 listing = listing([listing.isdir]);
+%Hier Maske für den Unterstrich bei dem Ordnernamen <Monkey Name>_<Datum>
 mask = contains({listing(:).name},'_');
 monkeyFolders = {listing([mask]).name};
 
