@@ -18,7 +18,7 @@ classdef DbBuilder
             path = [obj.dir,'/',patcher,'_Cells.csv'];
 
             csvTypes   ={'datetime','string','int32','string'            ,'int32'       ,'double'   ,'int32'              ,'int32'            ,'int32'                 ,'int32'               ,'int32'   ,'int32'  ,'int32','int32'               ,'double'          ,'double'               ,'string'  ,'string','string','string' };
-            structNames={'Date','Monkey'    ,'Cell' ,'PatcherCellName'   ,'Depth'       ,'R_pipette','R_access_cell_start','R_access_cell_end','R_membrane_start'      ,'R_membrance_end'     ,'VR_start','VR_end' ,'VM'   ,'Holding_current'     ,'Capacitance_dial','Bride_balance'        ,'Location','Area'  ,'Layer' ,'Comment'};
+            structNames={'Date','Monkey'    ,'Cell' ,'PatcherCellName'   ,'Depth'       ,'R_pipette','R_access_cell_start','R_access_cell_end','R_membrane_start'      ,'R_membrance_end'     ,'VR_start','VR_end' ,'VM'   ,'Holding_current'     ,'Capacitance_dial','Bridge_balance'        ,'Location','Area'  ,'Layer' ,'Comment'};
             structTypes=csvTypes;
             
             
