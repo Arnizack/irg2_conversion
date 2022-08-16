@@ -243,9 +243,28 @@ function StimDescription = createStimDescription(data,x_scale,y_scale)
 
 end
 
-function amp = getStimAmplitude(data,stimDesc)
+function amp = getStimAmplitude(data,stimDesc,xScale) % Stefan: Added xScale for bias calculation
     stim_on_data = data(stimDesc.start_idx:stimDesc.end_idx);
-    amp = round(mean(stim_on_data),-1);
+    %amp = round(mean(stim_on_data),-1); % orginal
+    
+    %added the following to correctly calculate the actual stimulus
+    %amplitude with respect to the holding current
+    
+    start_test_pulse = stimDesc.start_idx-(0.45/xScale);
+    end_test_pulse = stimDesc.start_idx;
+    if start_test_pulse < 0
+         % no testpulse or unknown protocols; pA
+        start_test_pulse = 1;
+    else
+        start_test_pulse = ceil(start_test_pulse);
+         % with test pulse; pA; ceil because matlab throws an error otherwise
+    end
+
+    bias = mean(data(start_test_pulse:end_test_pulse));
+
+    
+    
+    amp = round(mean(stim_on_data)-bias,-1); %Substract bias to show stimulus relative to holding
 end
 
 
@@ -353,8 +372,10 @@ function [sweepAmps,stimDesc,sweepNumberEnd,ic_elec,nwb] = cfsFile2NWB(CfsFile, 
 
         [ic_elec,ic_elec_link,nwb] = nwbInitElectrode(nwb,ic_elec_name);
     
-        sweepAmps = [sweepAmps,getStimAmplitude(CfsFile.data(:,s,2),stimDesc)];
-    
+%        sweepAmps = [sweepAmps,getStimAmplitude(CfsFile.data(:,s,2),stimDesc)];
+        sweepAmps = [sweepAmps,getStimAmplitude(CfsFile.data(:,s,2),stimDesc,CfsFile.param.xScale(1))]; % for correct sweet amp
+
+        
         nwb=nwbAddSweep(nwb,...
                     sweepNumber,...
                     ic_elec_link,stimDesc.name,...
@@ -389,8 +410,19 @@ function nwb = initNwb(nwbIdentifier,AnimalDesc)
 end
 
 function ID = getNwbIdentifier(AnimalDesc,CellTag)
-    
-    MATFXID = ['M',num2str(AnimalDesc.number),'_',AnimalDesc.patcher, '_A1_C', CellTag,'_']; % ID for MatFX naming convention - needs to be expanded on
+    switch AnimalDesc.patcher %Hardcoding initials for id
+        case 'FELIX'
+            initials = 'FP';
+        case 'JENIFER'
+            initials = 'JR';
+        case 'ANDREAS'
+            initials = 'AN';
+        otherwise
+            initials = 'XX';
+    end
+            
+
+    MATFXID = ['M',num2str(AnimalDesc.number),'_',initials, '_A1_C', CellTag,'_']; % ID for MatFX naming convention - needs to be expanded on
     ID = [MATFXID,'Goettingen', '_',AnimalDesc.Amp,'_Cell', CellTag];
 end
 
