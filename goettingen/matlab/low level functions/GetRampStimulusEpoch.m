@@ -16,6 +16,11 @@ function StimOn = GetRampStimulusEpoch(input,StimOff,x_scale,y_scale)
     start_fit = find(diff(mask_lower)==1);
     start_fit = start_fit(length(start_fit));%take last element
     
+    %added subsequent part to fix jagged ramps like in benefix
+    if start_fit>StimOff
+        start_fit = find(diff(mask_lower)==1,1);
+    end
+    
     % Alternativ: Benutzt die vorgegebene Steigung
     % Das hat bei den Daten nicht ganz so gut funktioniert, da die
     % vorgegebene Steigung anderes ist zu der tatsächlichen Steigung.
@@ -36,6 +41,8 @@ function StimOn = GetRampStimulusEpoch(input,StimOff,x_scale,y_scale)
     x = [start_fit:StimOff];
     X = [ones(StimOff-start_fit+1,1),transpose(x)];
 
+
+    
     b=X\input(start_fit:StimOff);
 
 
