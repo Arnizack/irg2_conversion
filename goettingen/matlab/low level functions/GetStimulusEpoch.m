@@ -14,7 +14,9 @@ if(beginning>threshold)
 end
 
 
-max_input = max(input);
+%max_input = max(input);
+max_input = max(input(4000:end)); % changed it because sometimes flipping caused an issue for very small pulses
+
 
 lower_quantile = quantile(input,0.05);
 
