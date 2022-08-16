@@ -6,7 +6,7 @@
 mainfolder = 'F:\uni\nebenjob\data\NPI Neuroanatomy - Raw Data CFS-Files';
 outputfolder = 'F:\uni\nebenjob\output\cfs';
 
-mainfolder = uigetdir('','Select main folder containing all monkey folders');
+mainfolder = uigetdir('E:\Data\MonkeyData\Monkeys','Select main folder containing all monkey folders');
 outputfolder = uigetdir(mainfolder,'Select output folder'); 
 
 
@@ -17,13 +17,15 @@ monkey_db = db_builder.OpenMonkeys();
 listing = dir(mainfolder);
 listing = listing([listing.isdir]);
 %Hier Maske für den Unterstrich bei dem Ordnernamen <Monkey Name>_<Datum>
-mask = contains({listing(:).name},'_');
-monkeyFolders = {listing([mask]).name};
-
+% mask = contains({listing(:).name},'_');
+% monkeyFolders = {listing([mask]).name};
+listing = listing(~ismember({listing(:).name},{'.','..'})); %NEcessary without mask
+monkeyFolders = {listing.name};
 
 for monkey_idx=1:length(monkeyFolders)
     monkeyFolder = monkeyFolders{monkey_idx};
-    monkeyName = extractBefore(monkeyFolder,'_');
+    %monkeyName = extractBefore(monkeyFolder,'_'); % for mask
+    monkeyName = monkeyFolder; % added without mask
     
     monkeyDirectory = [mainfolder,'/',monkeyFolder];
 
@@ -49,9 +51,11 @@ for monkey_idx=1:length(monkeyFolders)
             fileList = dir([patcherDirectory,'/',cellList(n,1).name,'/*.cfs']);
         
             pathList = strcat({fileList.folder},{'/'},{fileList.name});
-        
+            
             pathList = string(pathList);
-        
+         if isempty(fileList)
+             break
+         end
             nwb = cfsFiles2NWB(pathList,desc,cellTag);
         
             nwb_savepath = fullfile([outputfolder , '\',nwb.identifier '.nwb']);
