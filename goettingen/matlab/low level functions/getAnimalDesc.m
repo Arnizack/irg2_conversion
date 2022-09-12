@@ -10,7 +10,7 @@ function AnimalDesc = getAnimalDesc(monkey_db,patcher,monkey)
     AnimalDesc.age = data.Age;
     AnimalDesc.sex =  upper(data.Sex);
     AnimalDesc.species = data.Species;
-
+    AnimalDesc.weight = data.Weight;
     AnimalDesc = AnimalDescPostprocess(AnimalDesc);
 
 
@@ -34,5 +34,6 @@ function AnimalDesc = AnimalDescPostprocess(AnimalDesc)
     AnimalDesc.sex = upper(AnimalDesc.sex);
     AnimalDesc.patcher = upper(AnimalDesc.patcher);
     AnimalDesc.Amp = upper(AnimalDesc.Amp);
-
+    AnimalDesc.species = [upper(AnimalDesc.species(1)), lower(AnimalDesc.species(2:end))];
+    AnimalDesc.weight = num2str(AnimalDesc.weight/1000);
 end
