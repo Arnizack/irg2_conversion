@@ -367,7 +367,7 @@ function [sweepAmps,stimDesc,sweepNumberEnd,ic_elec,nwb] = cfsFile2NWB(CfsFile, 
     sweepAmps = [];
     
     sweepNumber = sweepNumberStart;
-
+         
     for s = 1:size(CfsFile.data, 2)
 
         [ic_elec,ic_elec_link,nwb] = nwbInitElectrode(nwb,ic_elec_name);
@@ -387,8 +387,7 @@ function [sweepAmps,stimDesc,sweepNumberEnd,ic_elec,nwb] = cfsFile2NWB(CfsFile, 
         sweepNumber = sweepNumber+1;
 
     end
-    
-    sweepNumberEnd = sweepNumber;
+     sweepNumberEnd = sweepNumber;
 end
 
 function nwb = initNwb(nwbIdentifier,AnimalDesc)
@@ -404,7 +403,8 @@ function nwb = initNwb(nwbIdentifier,AnimalDesc)
         'description', AnimalDesc.name, ...
         'age', num2str(AnimalDesc.age), ...
         'sex', AnimalDesc.sex, ...
-        'species', AnimalDesc.species ...
+        'species', AnimalDesc.species, ...
+        'weight', AnimalDesc.weight ...
     );
 
 end
@@ -422,7 +422,7 @@ function ID = getNwbIdentifier(AnimalDesc,CellTag)
     end
             
 
-    MATFXID = ['M',num2str(AnimalDesc.number),'_',initials, '_A1_C', CellTag,'_']; % ID for MatFX naming convention - needs to be expanded on
+    MATFXID = ['M',num2str(AnimalDesc.number, '%02.f'),'_',initials, '_A1_C', CellTag,'_']; % ID for MatFX naming convention - needs to be expanded on
     ID = [MATFXID,'Goettingen', '_',AnimalDesc.Amp,'_Cell', CellTag];
 end
 
