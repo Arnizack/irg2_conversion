@@ -3,6 +3,12 @@ function [StimOn,StimOff] = GetStimulusEpoch(input)
 max_input = max(input(4000:end));
 min_input = quantile(input(4000:end),0.01);
 
+%added for Chibo Felix square pulse Rs traces
+if length(input)< 4000
+    max_input = max(input);
+    min_input = quantile(input,0.01);
+end
+%--
 threshold = max_input*0.5+min_input*0.5;
 close all 
 plot(input);
@@ -17,6 +23,11 @@ end
 %max_input = max(input);
 max_input = max(input(4000:end)); % changed it because sometimes flipping caused an issue for very small pulses
 
+%added for Chibo Felix square pulse Rs traces
+if length(input)< 4000
+    max_input = max(input);
+end
+%--
 
 lower_quantile = quantile(input,0.05);
 
